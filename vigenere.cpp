@@ -3,60 +3,50 @@
 
 using namespace std;
 
-string encrypt(string input, string key) {
-    string output = "";
-    unsigned int key_length = key.length();
-    unsigned int i = 0;
+string encrypt(string msg, string key) {
+    const unsigned int msg_len = msg.length();
+    const unsigned int key_len = key.length();
+    string cipher = "";
 
-    for (unsigned char ch : input) {
-        unsigned char asc_key = key[i % key_length];
-        
-        unsigned char shift = asc_key - 32;
-        unsigned char new_val = 32 + ((ch - 32 + shift) % 95);
-        
-        output += static_cast<char>(new_val);
-        i++;
+    for (unsigned int i = 0, j = 0; i < msg_len; i++, j++) {
+        j = j % key_len;
+        int c = msg[i] + key[j] - 32;
+        if (c >= 127) c -= 95;
+        char ch = c;
+        cipher += ch;
     }
-    return output;
+
+    return cipher;
 }
 
-string decrypt(string output, string key) {
-    string input = "";
-    unsigned int key_length = key.length();
-    unsigned int i = 0;
+string decrypt(string cipher, string key) {
+    const unsigned int cipher_len = cipher.length();
+    const unsigned int key_len = key.length();
+    string msg = "";
 
-    for (unsigned char ch : output) {
-        unsigned char asc_key = key[i % key_length];
-        
-        unsigned char shift = asc_key - 32;
-        unsigned char new_val = 32 + ((ch - 32 + 95 - shift) % 95);
-        
-        input += static_cast<char>(new_val);
-        i++;
+    for (unsigned int i = 0, j = 0; i < cipher_len; i++, j++) {
+        j = j % key_len;
+        int c = cipher[i] - key[j] + 32;
+        if (c < 32) c += 95;
+        char ch = c;
+        msg += c;
     }
-    return input;
+
+    return msg;
 }
 
 int main() {
-    string key, input, output, dec_output;
+    string msg, key;
 
+    cout << "Enter message: ";
+    getline(cin, msg);
     cout << "Enter key: ";
     getline(cin, key);
 
-    cout << "Enter message: ";
-    getline(cin, input);
+    string cipher = encrypt(msg, key);
+    cout << "Encrypted message: " << cipher << endl;
 
-    output = encrypt(input, key);
-    cout << "Encrypted: " << output << endl;
-
-    dec_output = decrypt(output, key);
-    cout << "Decrypted: " << dec_output << endl;
-
-    if (input == dec_output) {
-        cout << "The encryption was successful!" << endl;
-    } else {
-        cout << "The encryption wasn't successful!" << endl;
-    }
-
+    string decrypted_msg = decrypt(cipher, key);
+    cout << "Decrypted message: " << decrypted_msg << endl;
     return 0;
 }
